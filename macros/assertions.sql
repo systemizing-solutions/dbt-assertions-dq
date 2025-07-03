@@ -1,3 +1,4 @@
+{# macros/assertions.sql #}
 {%- macro assertions(column=var('dbt_assertions:default_column', 'exceptions'), _node=none) %}
 {#-
     Generates row-level assertions based on the schema model YAML.
@@ -95,6 +96,8 @@
 {%- do assertions.update(dbt_assertions._get_unique_assertions(__unique__)) %}
 {%- do assertions.update(dbt_assertions._get_not_null_assertions(__not_null__)) %}
 
+{#  NEW — merge dynamically-discovered plugin rules #}
+{%- do assertions.update(dbt_assertions._get_plugin_assertions(assertions)) %}
 
 {{- dbt_assertions._assertions_expression(column, assertions) }}
 
