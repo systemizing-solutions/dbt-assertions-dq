@@ -1,9 +1,9 @@
 {% test generic_assertions(
-    model,
-    column=var('dbt_assertions:default_column', 'exceptions'),
-    exclude_list=none,
-    include_list=none,
-    re_assert=False
+        model,
+        column=var('dbt_assertions:default_column', 'exceptions'),
+        exclude_list=none,
+        include_list=none,
+        re_assert=False
 ) %}
 {#-
     Generates a test SELECT expression to get rows based on exceptions.
@@ -18,31 +18,35 @@
         re_assert (optional[bool]): to set to `true` if your assertion field
             is not calculated in your table.
 
+        Supports all built-in and plugin-based rules. Plugin rules are registered
+        via macros prefixed with `dbt_assertions__*`, and automatically picked up
+        when re_assert is true.
+
     Returns:
         str: An SELECT expression to return rows with exceptions.
 -#}
 
 WITH
     dbt_assertions_final AS (
-        SELECT
-            *
-            {%- if re_assert and execute %}
+    SELECT
+        *
+        {%- if re_assert and execute %}
 
-                {#- Filter the graph to find the node for the specified model -#}
-                {%- set node = (
-                        graph.nodes.values()
-                        | selectattr('resource_type', 'equalto', 'model')
-                        | selectattr('database'     , 'equalto', model.database)
-                        | selectattr('schema'       , 'equalto', model.schema)
-                        | selectattr('alias'        , 'equalto', model.alias or model.name)
-                    ) | first -%}
+            {#- Filter the graph to find the node for the specified model -#}
+            {%- set node = (
+                    graph.nodes.values()
+                    | selectattr('resource_type', 'equalto', 'model')
+                    | selectattr('database'     , 'equalto', model.database)
+                    | selectattr('schema'       , 'equalto', model.schema)
+                    | selectattr('alias'        , 'equalto', model.alias or model.name)
+                ) | first -%}
 
-                ,
-                {{ dbt_assertions.assertions(column=column, _node=node) | indent(12) }}
+            ,
+            {{ dbt_assertions.assertions(column=column, _node=node) | indent(12) }}
 
-            {%- endif %}
-        FROM {{ model }}
-    )
+        {%- endif %}
+    FROM {{ model }}
+)
 
 SELECT
     *

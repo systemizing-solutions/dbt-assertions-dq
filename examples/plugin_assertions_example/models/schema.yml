@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: d_orders
+    description: "Demonstrates plugin-based assertions."
+    columns:
+      - name: exceptions
+        assertions:
+          __positive__:
+            - amount
+            - tax
+
+          __is_in__:
+            payment_method: ['CREDIT_CARD', 'PAYPAL']
+
+    tests:
+      - dbt_assertions.generic_assertions:
+          include_list:
+            - amount__positive
+            - tax__positive
+            - payment_method__is_in
+          re_assert: true
