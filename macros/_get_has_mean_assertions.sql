@@ -33,8 +33,15 @@
         {%- if parent is none %}
             {%- for col in cols %}
                 {%- set raw_lim = mean_columns[col] %}
-                {%- set lim     = raw_lim if raw_lim is number
-                                  else ("'" ~ raw_lim|replace("'", "''") ~ "'") %}
+                {% set lim = (
+                    limit_raw is number
+                        and limit_raw
+                    or (limit_raw | trim).startswith('(')
+                        and limit_raw
+                    or (limit_raw | trim)[:6] | lower == 'select'
+                        and limit_raw
+                    or "'" ~ limit_raw | replace("'", "''") ~ "'"
+                ) %}
                 {%- do result.update({
                     col ~ '__has_mean': {
                         'description': col ~ ' must be ≤ ' ~ raw_lim ~ '.',

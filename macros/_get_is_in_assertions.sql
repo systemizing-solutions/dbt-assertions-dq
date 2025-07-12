@@ -25,8 +25,7 @@
             {# format the IN (…) list #}
             {%- set formatted = [] %}
             {%- for v in value %}
-                {%- do formatted.append(v if v is number else
-                                        "'" ~ v|replace("'", "''") ~ "'") %}
+                {%- do formatted.append(dbt_assertions._as_sql_limit(v)) %}
             {%- endfor %}
             {%- set in_list = formatted | join(', ') %}
 

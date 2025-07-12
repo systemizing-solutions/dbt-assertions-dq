@@ -31,10 +31,24 @@
             {%- endif %}
 
             {# quote if necessary for SQL literal ---------------------- #}
-            {%- set lower = lower_raw if lower_raw is number
-                            else ("'" ~ lower_raw|replace("'", "''") ~ "'") %}
-            {%- set upper = upper_raw if upper_raw is number
-                            else ("'" ~ upper_raw|replace("'", "''") ~ "'") %}
+            {% set lower = (
+                lower_raw is number
+                    and lower_raw
+                or (lower_raw | trim).startswith('(')
+                    and lower_raw
+                or (lower_raw | trim)[:6] | lower == 'select'
+                    and lower_raw
+                or "'" ~ lower_raw | replace("'", "''") ~ "'"
+            ) %}
+            {% set upper = (
+                upper_raw is number
+                    and upper_raw
+                or (upper_raw | trim).startswith('(')
+                    and upper_raw
+                or (upper_raw | trim)[:6] | lower == 'select'
+                    and upper_raw
+                or "'" ~ upper_raw | replace("'", "''") ~ "'"
+            ) %}
 
             {# ---- top-level column ----------------------------------- #}
             {%- if parent is none %}

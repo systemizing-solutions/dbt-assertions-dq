@@ -32,8 +32,7 @@
         {%- if parent is none %}
             {%- for col in cols %}
                 {%- set raw_val = sum_columns[col] %}
-                {%- set max_val = raw_val if raw_val is number
-                                else ("'" ~ raw_val|replace("'", "''") ~ "'") %}
+                {%- set max_val = dbt_assertions._as_sql_limit(raw_val) %}
                 {%- do result.update({
                     col ~ '__has_sum': {
                         'description': col ~ ' must be ≤ ' ~ raw_val ~ '.',

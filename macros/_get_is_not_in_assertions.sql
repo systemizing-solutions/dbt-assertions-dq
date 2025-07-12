@@ -23,8 +23,7 @@
             {# build the (quoted) value list --------------------------- #}
             {%- set quoted = [] %}
             {%- for v in value %}
-                {%- do quoted.append(v if v is number else
-                                     "'" ~ v|replace("'", "''") ~ "'") %}
+                {%- do quoted.append(dbt_assertions._as_sql_limit(v)) %}
             {%- endfor %}
             {%- set list_sql = quoted | join(', ') %}
 

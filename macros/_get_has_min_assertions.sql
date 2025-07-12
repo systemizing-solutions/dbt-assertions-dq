@@ -9,6 +9,20 @@
 #        qty: 1
 # ============================================================================= #}
 
+
+{% macro _as_sql_limit(limit_raw) %}
+{% set lim = (
+            limit_raw is number
+                and limit_raw
+            or (limit_raw | trim).startswith('(')
+                and limit_raw
+            or (limit_raw | trim)[:6] | lower == 'select'
+                and limit_raw
+            or "'" ~ limit_raw | replace("'", "''") ~ "'"
+        ) %}
+{{ return(lim) }}
+{% endmacro %}
+
 {%- macro _get_has_min_assertions(min_columns) -%}
     {{ return(
         adapter.dispatch('_get_has_min_assertions',
@@ -28,8 +42,8 @@
         {%- if parent is none %}
             {%- for col in cols %}
                 {%- set raw_val = min_columns[col] %}
-                {%- set min_val = raw_val if raw_val is number
-                                else ("'" ~ raw_val|replace("'", "''") ~ "'") %}
+                {%- set min_val = dbt_assertions._as_sql_limit(raw_val) %}
+
                 {%- do result.update({
                     col ~ '__has_min': {
                         'description': col ~ ' must be ≥ ' ~ raw_val ~ '.',
@@ -50,8 +64,7 @@
 
             {%- for col in cols %}
                 {%- set raw_val = layer.nested[col] %}
-                {%- set min_val = raw_val if raw_val is number
-                                else ("'" ~ raw_val|replace("'", "''") ~ "'") %}
+                {% set min_val = dbt_assertions._as_sql_limit(raw_val) %}
                 {%- set expr = base + [
                     '\\n      AND ' ~ parent ~ '.' ~ col ~ ' < ' ~ min_val,
                     '\\n)'] %}

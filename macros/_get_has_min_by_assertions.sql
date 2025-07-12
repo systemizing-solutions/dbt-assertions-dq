@@ -40,8 +40,15 @@
             {%- set by_cols   = [] %}
         {%- endif %}
 
-        {%- set limit = limit_raw if limit_raw is number
-                       else "'" ~ limit_raw | replace("'", "''") ~ "'" %}
+        {% set limit = (
+            limit_raw is number
+                and limit_raw
+            or (limit_raw | trim).startswith('(')
+                and limit_raw
+            or (limit_raw | trim)[:6] | lower == 'select'
+                and limit_raw
+            or "'" ~ limit_raw | replace("'", "''") ~ "'"
+        ) %}
 
         {# ───────── top-level scalar field ──────────────────────────── #}
         {%- if parent is none %}
